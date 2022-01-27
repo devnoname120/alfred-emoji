@@ -7,14 +7,6 @@ const modifiers = emojilib.fitzpatrick_scale_modifiers
 let skinTone
 let modifier
 
-let verb = 'Copy'
-let preposition = 'to clipboard'
-
-const resetWordsForPasteByDefault = () => {
-  verb = 'Paste'
-  preposition = 'as snippet'
-}
-
 const setSkinToneModifier = (tone) => {
   skinTone = tone
   modifier = skinTone ? modifiers[skinTone] : null
@@ -42,9 +34,23 @@ const getIconName = (emoji, name) => {
   return name
 }
 
-const alfredItem = (emoji, name) => {
+  const getSubtitleStrings = (operationType) => {
+    switch (operationType) {
+      case 'snippet':
+        return {verb: 'Paste', preposition: 'as snippet'}
+      case 'autopaste':
+        return {verb: 'Paste', preposition: 'into frontmost application'}
+      case 'clipboard':
+      default:
+        return {verb: 'Copy', preposition: 'to clipboard'}
+    }
+  }
+  
+  const alfredItem = (emoji, name, operationType = 'clipboard') => {
   const modifiedEmoji = addModifier(emoji, modifier)
   const icon = getIconName(emoji, name)
+
+  const {verb, preposition} = getSubtitleStrings(operationType)
 
   // No `uid` property otherwise Alfred ignores the ordering of the list and uses its own
   return {
@@ -68,17 +74,17 @@ const alfredItem = (emoji, name) => {
   }
 }
 
-const alfredItems = (names) => {
+const alfredItems = (names, operationType = 'clipboard') => {
   const items = []
   names.forEach((name) => {
     const emoji = emojilib.lib[name]
     if (!emoji) return
-    items.push(alfredItem(emoji, name))
+    items.push(alfredItem(emoji, name, operationType))
   })
   return { items }
 }
 
-const all = () => alfredItems(emojiNames)
+const all = (operationType = 'clipboard') => alfredItems(emojiNames, operationType)
 
 const libHasEmoji = (name, term) => {
   return emojilib.lib[name] &&
@@ -120,14 +126,12 @@ const matches = (terms) => {
 // :thumbs up: => ['thumbs', 'up']
 const parse = query => query.replace(/[:]/g, '').split(/\s+/)
 
-module.exports = function search (query, skinTone, pasteByDefault = false) {
-  if (pasteByDefault) resetWordsForPasteByDefault()
-
+module.exports = function search (query, skinTone, operationType = 'clipboard') {
   setSkinToneModifier(skinTone)
 
-  if (!query) return all()
+  if (!query) return all(operationType)
 
   const terms = parse(query)
 
-  return alfredItems(matches(terms))
+  return alfredItems(matches(terms), operationType)
 }
