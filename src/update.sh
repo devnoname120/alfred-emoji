@@ -2,7 +2,7 @@
 # https://github.com/vitorgalvao/alfred-workflows/tree/master/OneUpdater
 
 # THESE VARIABLES MUST BE SET.
-readonly github_repo='jsumners/alfred-emoji'
+readonly github_repo='devnoname120/alfred-emoji'
 readonly frequency_check='1' # days
 
 # FROM HERE ON, CODE SHOULD BE LEFT UNTOUCHED!
